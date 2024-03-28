@@ -29,7 +29,7 @@ class Economy(commands.Cog):
         await ctx.send(embed=embed)
     
     @commands.command(aliases=['dep'])
-    async def balance(self, ctx, money: str):
+    async def deposit(self, ctx, money: str):
         if not money: return
 
         userInfo = self.users.get({'_id': ctx.author.id})
