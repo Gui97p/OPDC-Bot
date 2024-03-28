@@ -27,6 +27,26 @@ class Economy(commands.Cog):
         embed.add_field(name="Total", value=f"${userInfo['cash']+userInfo['bank']}", inline=False)
 
         await ctx.send(embed=embed)
+    
+    @commands.command(aliases=['dep'])
+    async def balance(self, ctx, money: str):
+        if not money: return
+
+        userInfo = self.users.get({'_id': ctx.author.id})
+        if not userInfo:
+            await ctx.send('Error on getting your data.')
+            return
+        
+        if money == 'all': money = str(userInfo['cash'])
+        if not money.isalnum(): return
+        money = int(money)
+
+        if userInfo['cash'] - money < 0:
+            await ctx.send('Você não possui toda essa quantia em sua Carteira')
+            return
+        
+        self.users.update({'_id': userInfo['_id']}, {'$inc': {'cash': -money, 'bank': money}})
+        await ctx.send('Dinheiro depositado com sucesso!')
 
 
 async def setup(bot):

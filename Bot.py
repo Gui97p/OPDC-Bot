@@ -1,5 +1,7 @@
 import discord
-from discord.ext import commands
+from discord.ext import commands, tasks
+from Database.db import getDB
+from math import ceil
 
 import settings
 
@@ -9,6 +11,13 @@ cogs: list = ["Functions.NewMember.newmember", "Functions.Admin.admin", "Functio
 
 client = commands.Bot(command_prefix=settings.Prefix, help_command=None, intents=intents)
 
+@tasks.loop(hours=24*7)
+async def bankMoney():
+    users = getDB('users')
+    docs = users()
+
+    for doc in docs:
+        users.update({'_id': doc['_id']}, {'$inc': {'bank': ceil(doc['bank'] * settings.BankPerc)}})
 
 @client.event
 async def on_ready():
@@ -22,5 +31,7 @@ async def on_ready():
         except Exception as e:
             exc = "{}: {}".format(type(e).__name__, e)
             print("Failed to load cog {}\n{}".format(cog, exc))
+    
+    bankMoney.start()
 
 client.run(settings.TOKEN)
